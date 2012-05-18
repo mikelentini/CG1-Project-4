@@ -9,14 +9,15 @@
 
 #if defined(__APPLE__) && defined(__MACH__)
 #include <GLUT/glut.h>
+#include <SOIL.h>
 #else
+#include <SOIL/SOIL.h>
 #include <GL/glut.h>
 #endif
 
 #include "Camera.h"
 #include "Bullet.h"
 #include <list>
-#include <SOIL/SOIL.h>
 
 Camera camera;
 bool fillShapes = false;

@@ -9,11 +9,7 @@
 INCLUDE =
 LIBDIRS =
 
-#this is for ubuntu
-#LDLIBS = -lglut -lGLU -lGL -lXext -lX11 -lm -lSOIL
-
-#this is for os x
-LDLIBS = -framework GLUT -framework OpenGL -framework Cocoa
+LDLIBS = -lglut -lGLU -lGL -lXext -lX11 -lm -lSOIL
 
 CFLAGS = -g $(INCLUDE)
 CCFLAGS =  $(CFLAGS)
