@@ -29,6 +29,8 @@ list<Bullet> bullets;
 float ambLight[] = { 1, 1, 1, 1 };
 
 GLuint asteroidTexture;
+GLuint smallAsteroidTexture;
+GLuint spaceTexture;
 
 float lastX = 0;
 float lastY = 0;
@@ -90,11 +92,12 @@ void keyboard(unsigned char key, int x, int y) {
 		// 'r' key
 		case 114:
 			camera = Camera();
-			fillShapes = false;
+			fillShapes = true;
+			lightOn = true;
 
 			asteroids.clear();
 
-			for (int i = 0; i < 49; i++) {
+			for (int i = 0; i < 99; i++) {
 				asteroids.push_back(Asteroid(false));
 			}
 
@@ -139,11 +142,30 @@ void drawScene() {
 	int height = glutGet(GLUT_WINDOW_HEIGHT);
 	
 	if (fillShapes) {
-		glColor4ub(0, 0, 255, 125);
-		glutSolidCube(20);
+		if (!lightOn) {
+			glColor4ub(0, 0, 255, 125);
+			glutSolidSphere(10, 30, 30);
+		} else {
+			glColor3f(1, 1, 1);
+			
+			glEnable(GL_TEXTURE_2D);
+			glEnable(GL_TEXTURE_GEN_S);
+			glEnable(GL_TEXTURE_GEN_T);
+			
+			glBindTexture(GL_TEXTURE_2D, spaceTexture);
+			
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			
+			glutSolidSphere(10, 30, 30);
+			
+			glDisable(GL_TEXTURE_GEN_S);
+			glDisable(GL_TEXTURE_GEN_T);
+			glDisable(GL_TEXTURE_2D);
+		}
 	} else {
 		glColor4ub(0, 0, 255, 255);
-		glutWireCube(20);
+		glutWireSphere(10, 30, 30);
 	}
 	
 	glColor3f(1, 1, 1);
@@ -169,7 +191,12 @@ void drawScene() {
 				gluQuadricTexture(asteroid, GL_TRUE);
 				
 				glEnable(GL_TEXTURE_2D);
-				glBindTexture(GL_TEXTURE_2D, asteroidTexture);
+				
+				if (iter->isSmall) {
+					glBindTexture(GL_TEXTURE_2D, smallAsteroidTexture);
+				} else {
+					glBindTexture(GL_TEXTURE_2D, asteroidTexture);
+				}
 			}
 		}
 
@@ -295,6 +322,8 @@ void initGL() {
 	glEnable(GL_COLOR_MATERIAL);
 	
 	asteroidTexture = SOIL_load_OGL_texture("asteroid.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB);
+	smallAsteroidTexture = SOIL_load_OGL_texture("small-asteroid.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB);
+	spaceTexture = SOIL_load_OGL_texture("space.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB);
 }
 
 void reshape(int w, int h) {
@@ -376,7 +405,7 @@ int main( int argc, char** argv ) {
 	
 	initGL();
 	
-	for (int i = 0; i < 49; i++) {
+	for (int i = 0; i < 99; i++) {
 		asteroids.push_back(Asteroid(false));
 	}
 
