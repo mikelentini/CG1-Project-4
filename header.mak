@@ -13,7 +13,7 @@ LIBDIRS =
 #LDLIBS = -lglut -lGLU -lGL -lXext -lX11 -lm -lSOIL
 
 #this is for os x
-LDLIBS = -framework GLUT -framework OpenGL -framework Cocoa
+LDLIBS = -framework GLUT -framework OpenGL -framework Cocoa -lSOIL
 
 CFLAGS = -g $(INCLUDE)
 CCFLAGS =  $(CFLAGS)

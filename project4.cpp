@@ -20,9 +20,15 @@
 #include <list>
 
 Camera camera;
-bool fillShapes = false;
+bool fillShapes = true;
+bool lightOn = true;
+bool fogOn = false;
 list<Asteroid> asteroids;
 list<Bullet> bullets;
+
+float ambLight[] = { 1, 1, 1, 1 };
+
+GLuint asteroidTexture;
 
 float lastX = 0;
 float lastY = 0;
@@ -39,11 +45,23 @@ void keyboard(unsigned char key, int x, int y) {
 			break;
 		// 1 key
 		case 49:
-			fillShapes = false;
+			lightOn = !lightOn;
+			
+			if (lightOn) {
+				glEnable(GL_LIGHTING);
+				glLightfv(GL_LIGHT0, GL_AMBIENT, ambLight);
+				glEnable(GL_LIGHT0);
+				glEnable(GL_COLOR_MATERIAL);
+			} else {
+				glDisable(GL_LIGHTING);
+				glDisable(GL_LIGHT0);
+				glDisable(GL_COLOR_MATERIAL);
+			}
+			
 			break;
 		// 2 key
 		case 50:
-			fillShapes = true;
+			fillShapes = !fillShapes;
 			break;
 		// space key
 		case 32:
@@ -81,6 +99,10 @@ void keyboard(unsigned char key, int x, int y) {
 			}
 
 			bullets.clear();
+			break;
+		// 'f' key
+		case 102:
+			fogOn = !fogOn;
 			break;
 	}
 }
@@ -129,12 +151,6 @@ void drawScene() {
 	for (list<Asteroid>::iterator iter(asteroids.begin()); iter != asteroids.end(); iter++) {
 		GLUquadric *asteroid = gluNewQuadric();
 
-		if (!fillShapes) {
-			gluQuadricDrawStyle(asteroid, GLU_LINE);
-		} else {
-			gluQuadricDrawStyle(asteroid, GLU_FILL);
-		}
-
 		glPushMatrix();
 		glTranslatef(iter->position.x, iter->position.y, iter->position.z);
 		glRotatef(iter->rotate, iter->position.x, iter->position.y, iter->position.z);
@@ -142,8 +158,25 @@ void drawScene() {
 		if (iter->isSmall) {
 			glScalef(0.5f, 0.5f, 0.5f);
 		}
+		
+		if (!fillShapes) {
+			gluQuadricDrawStyle(asteroid, GLU_LINE);
+		} else {
+			if (!lightOn) {
+				gluQuadricDrawStyle(asteroid, GLU_FILL);
+			} else {
+				gluQuadricNormals(asteroid, GLU_SMOOTH);
+				gluQuadricTexture(asteroid, GL_TRUE);
+				
+				glEnable(GL_TEXTURE_2D);
+				glBindTexture(GL_TEXTURE_2D, asteroidTexture);
+			}
+		}
 
 		gluSphere(asteroid, 0.25f, 10, 10);
+		
+		glDisable(GL_TEXTURE_2D);
+		
 		glPopMatrix();
 
 		gluDeleteQuadric(asteroid);
@@ -159,6 +192,7 @@ void drawScene() {
 		if (!fillShapes) {
 			gluQuadricDrawStyle(bullet, GLU_LINE);
 		} else {
+			
 			gluQuadricDrawStyle(bullet, GLU_FILL);
 		}
 		
@@ -253,6 +287,14 @@ void initGL() {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+	glEnable(GL_LIGHTING);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambLight);
+	glEnable(GL_LIGHT0);
+	
+	glEnable(GL_COLOR_MATERIAL);
+	
+	asteroidTexture = SOIL_load_OGL_texture("asteroid.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB);
 }
 
 void reshape(int w, int h) {

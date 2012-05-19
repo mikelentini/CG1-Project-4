@@ -1,5 +1,5 @@
 #
-# Created by gmakemake (Sparc Apr  1 2012) on Fri May 18 19:32:53 2012
+# Created by gmakemake (Sparc Apr  1 2012) on Fri May 18 20:09:40 2012
 #
 
 #
@@ -56,7 +56,7 @@ LIBDIRS =
 #LDLIBS = -lglut -lGLU -lGL -lXext -lX11 -lm -lSOIL
 
 #this is for os x
-LDLIBS = -framework GLUT -framework OpenGL -framework Cocoa
+LDLIBS = -framework GLUT -framework OpenGL -framework Cocoa -lSOIL
 
 CFLAGS = -g $(INCLUDE)
 CCFLAGS =  $(CFLAGS)
