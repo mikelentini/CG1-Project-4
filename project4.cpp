@@ -22,9 +22,12 @@
 
 Camera camera;
 Sun sun;
+
 bool fillShapes = true;
 bool lightOn = true;
 bool fogOn = false;
+bool nurbsOn = false;
+
 list<Asteroid> asteroids;
 list<Bullet> bullets;
 
@@ -117,7 +120,7 @@ void keyboard(unsigned char key, int x, int y) {
 			
 			break;
 		case N:
-			
+			nurbsOn = !nurbsOn;
 			break;
 	}
 }
@@ -325,6 +328,10 @@ void drawScene() {
 	gluDeleteQuadric(sunQuadric);
 	
 	glDisable(GL_TEXTURE_2D);
+	
+	if (nurbsOn) {
+	
+	}
 	
 	if (fogOn) {
 		glFogi(GL_FOG_MODE, GL_LINEAR);
