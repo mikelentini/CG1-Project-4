@@ -31,6 +31,7 @@ float ambLight[] = { 1, 1, 1, 1 };
 GLuint asteroidTexture;
 GLuint smallAsteroidTexture;
 GLuint spaceTexture;
+GLuint projectileTexture;
 
 float lastX = 0;
 float lastY = 0;
@@ -219,8 +220,15 @@ void drawScene() {
 		if (!fillShapes) {
 			gluQuadricDrawStyle(bullet, GLU_LINE);
 		} else {
-			
-			gluQuadricDrawStyle(bullet, GLU_FILL);
+			if (!lightOn) {
+				gluQuadricDrawStyle(bullet, GLU_FILL);
+			} else {
+				gluQuadricNormals(bullet, GLU_SMOOTH);
+				gluQuadricTexture(bullet, GL_TRUE);
+				
+				glEnable(GL_TEXTURE_2D);
+				glBindTexture(GL_TEXTURE_2D, projectileTexture);
+			}
 		}
 		
 		glPushMatrix();
@@ -324,6 +332,7 @@ void initGL() {
 	asteroidTexture = SOIL_load_OGL_texture("asteroid.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB);
 	smallAsteroidTexture = SOIL_load_OGL_texture("small-asteroid.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB);
 	spaceTexture = SOIL_load_OGL_texture("space.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB);
+	projectileTexture = SOIL_load_OGL_texture("projectile.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB);
 }
 
 void reshape(int w, int h) {
