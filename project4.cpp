@@ -28,6 +28,8 @@ list<Bullet> bullets;
 
 float ambLight[] = { 1, 1, 1, 1 };
 
+float fogColor[] = { 0.70f, 0.70f, 0.70f, 1 };
+
 GLuint asteroidTexture;
 GLuint smallAsteroidTexture;
 GLuint spaceTexture;
@@ -107,6 +109,13 @@ void keyboard(unsigned char key, int x, int y) {
 		// 'f' key
 		case 102:
 			fogOn = !fogOn;
+			
+			if (fogOn) {
+				glEnable(GL_FOG);
+			} else {
+				glDisable(GL_FOG);
+			}
+			
 			break;
 	}
 }
@@ -267,6 +276,13 @@ void drawScene() {
 		} else {
 			iter++;
 		}
+	}
+	
+	if (fogOn) {
+		glFogi(GL_FOG_MODE, GL_LINEAR);
+		glFogfv(GL_FOG_COLOR, fogColor);
+		glFogf(GL_FOG_START, 0.5f);
+		glFogf(GL_FOG_END, 20);
 	}
 	
 	glutPostRedisplay();
