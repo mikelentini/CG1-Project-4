@@ -38,18 +38,18 @@ GLuint projectileTexture;
 float lastX = 0;
 float lastY = 0;
 
+const int ESC = 27, Q = 113, ONE = 49, TWO = 50, SPACE = 32, Z = 122, 
+	W = 119, A = 97, S = 115, D = 100, R = 114, F = 102, N = 110;
+
 void keyboard(unsigned char key, int x, int y) {
 	switch (key) {
-		// escape key
-		case 27:
+		case ESC:
 			exit(0);
 			break;
-		// 'q' key
-		case 113:
+		case Q:
 			exit(0);
 			break;
-		// 1 key
-		case 49:
+		case ONE:
 			lightOn = !lightOn;
 			
 			if (lightOn) {
@@ -64,36 +64,28 @@ void keyboard(unsigned char key, int x, int y) {
 			}
 			
 			break;
-		// 2 key
-		case 50:
+		case TWO:
 			fillShapes = !fillShapes;
 			break;
-		// space key
-		case 32:
+		case SPACE:
 			camera.moveUp(0.2);
 			break;
-		// 'z' key
-		case 122:
+		case Z:
 			camera.moveUp(-0.2);
 			break;
-		// 'w' key
-		case 119:
+		case W:
 			camera.moveForward(-0.2);
 			break;
-		// 'a' key
-		case 97:
+		case A:
 			camera.strafe(-0.2);
 			break;
-		// 's' key
-		case 115:
+		case S:
 			camera.moveForward(0.2);
 			break;
-		// 'd' key
-		case 100:
+		case D:
 			camera.strafe(0.2);
 			break;
-		// 'r' key
-		case 114:
+		case R:
 			camera = Camera();
 			fillShapes = true;
 			lightOn = true;
@@ -106,8 +98,7 @@ void keyboard(unsigned char key, int x, int y) {
 
 			bullets.clear();
 			break;
-		// 'f' key
-		case 102:
+		case F:
 			fogOn = !fogOn;
 			
 			if (fogOn) {
@@ -115,6 +106,9 @@ void keyboard(unsigned char key, int x, int y) {
 			} else {
 				glDisable(GL_FOG);
 			}
+			
+			break;
+		case N:
 			
 			break;
 	}
@@ -150,6 +144,10 @@ void passiveMotion(int x, int y) {
 void drawScene() {
 	int width = glutGet(GLUT_WINDOW_WIDTH);
 	int height = glutGet(GLUT_WINDOW_HEIGHT);
+	
+	if (lightOn) {
+		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT);
+	}
 	
 	if (fillShapes) {
 		if (!lightOn) {
