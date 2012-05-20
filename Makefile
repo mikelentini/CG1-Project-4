@@ -1,5 +1,5 @@
 #
-# Created by gmakemake (Sparc Apr  1 2012) on Fri May 18 20:09:40 2012
+# Created by gmakemake (Sparc Apr  1 2012) on Sat May 19 21:33:51 2012
 #
 
 #
@@ -69,13 +69,13 @@ CCLIBFLAGS = $(LIBFLAGS)
 ########## End of flags from header.mak
 
 
-CPP_FILES =	Asteroid.cpp Bullet.cpp Camera.cpp project4.cpp
+CPP_FILES =	Asteroid.cpp Bullet.cpp Camera.cpp Sun.cpp project4.cpp
 C_FILES =	
 S_FILES =	
-H_FILES =	Asteroid.h Bullet.h Camera.h vecmath.h
+H_FILES =	Asteroid.h Bullet.h Camera.h Sun.h vecmath.h
 SOURCEFILES =	$(H_FILES) $(CPP_FILES) $(C_FILES) $(S_FILES)
 .PRECIOUS:	$(SOURCEFILES)
-OBJFILES =	Asteroid.o Bullet.o Camera.o 
+OBJFILES =	Asteroid.o Bullet.o Camera.o Sun.o 
 
 #
 # Main targets
@@ -93,7 +93,8 @@ project4:	project4.o $(OBJFILES)
 Asteroid.o:	Asteroid.h vecmath.h
 Bullet.o:	Asteroid.h Bullet.h vecmath.h
 Camera.o:	Camera.h vecmath.h
-project4.o:	Asteroid.h Bullet.h Camera.h vecmath.h
+Sun.o:	Sun.h vecmath.h
+project4.o:	Asteroid.h Bullet.h Camera.h Sun.h vecmath.h
 
 #
 # Housekeeping

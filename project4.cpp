@@ -17,16 +17,19 @@
 
 #include "Camera.h"
 #include "Bullet.h"
+#include "Sun.h"
 #include <list>
 
 Camera camera;
+Sun sun;
 bool fillShapes = true;
 bool lightOn = true;
 bool fogOn = false;
 list<Asteroid> asteroids;
 list<Bullet> bullets;
 
-float ambLight[] = { 1, 1, 1, 1 };
+float ambLight[] = { 0.01f, 0.01f, 0.01f, 0.01f };
+float sunLight[] = { 1, 0.5f, 0, 1 };
 
 float fogColor[] = { 0.70f, 0.70f, 0.70f, 1 };
 
@@ -34,6 +37,7 @@ GLuint asteroidTexture;
 GLuint smallAsteroidTexture;
 GLuint spaceTexture;
 GLuint projectileTexture;
+GLuint sunTexture;
 
 float lastX = 0;
 float lastY = 0;
@@ -56,10 +60,14 @@ void keyboard(unsigned char key, int x, int y) {
 				glEnable(GL_LIGHTING);
 				glLightfv(GL_LIGHT0, GL_AMBIENT, ambLight);
 				glEnable(GL_LIGHT0);
-				glEnable(GL_COLOR_MATERIAL);
+				
+				glLightfv(GL_LIGHT1, GL_DIFFUSE, sunLight);
+				glLightfv(GL_LIGHT1, GL_AMBIENT, sunLight);
+				glEnable(GL_LIGHT1);
 			} else {
 				glDisable(GL_LIGHTING);
 				glDisable(GL_LIGHT0);
+				glDisable(GL_LIGHT1);
 				glDisable(GL_COLOR_MATERIAL);
 			}
 			
@@ -147,11 +155,13 @@ void drawScene() {
 	
 	if (lightOn) {
 		glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+		glEnable(GL_COLOR_MATERIAL);
 	}
 	
 	if (fillShapes) {
 		if (!lightOn) {
-			glColor4ub(0, 0, 255, 125);
+			glColor4ub(50, 50, 50, 255);
 			glutSolidSphere(10, 30, 30);
 		} else {
 			glColor3f(1, 1, 1);
@@ -172,10 +182,17 @@ void drawScene() {
 			glDisable(GL_TEXTURE_2D);
 		}
 	} else {
-		glColor4ub(0, 0, 255, 255);
+		glColor4ub(50, 50, 50, 255);
 		glutWireSphere(10, 30, 30);
 	}
 	
+	if (lightOn) {
+		glDisable(GL_COLOR_MATERIAL);
+	}
+	
+	float spec[] = { 1, 1, 1, 1 };
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, spec);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glColor3f(1, 1, 1);
 	
 	for (list<Asteroid>::iterator iter(asteroids.begin()); iter != asteroids.end(); iter++) {
@@ -276,6 +293,39 @@ void drawScene() {
 		}
 	}
 	
+	glColor3f(1, 1, 0);
+	
+	GLUquadric *sunQuadric = gluNewQuadric();
+	
+	if (!fillShapes) {
+		gluQuadricDrawStyle(sunQuadric, GLU_LINE);
+	} else {
+		if (!lightOn) {
+			gluQuadricDrawStyle(sunQuadric, GLU_FILL);
+		} else {
+			gluQuadricNormals(sunQuadric, GLU_SMOOTH);
+			gluQuadricTexture(sunQuadric, GL_TRUE);
+			
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, sunTexture);
+		}
+	}
+	
+	float sunPos[] = { sun.position.x, sun.position.y, sun.position.z, 1 };
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, sunLight);
+	glLightfv(GL_LIGHT1, GL_POSITION, sunPos);
+	
+	glPushMatrix();
+		glTranslatef(sun.position.x, sun.position.y, sun.position.z);
+		glRotatef(sun.rotate, sun.position.x, sun.position.y, sun.position.z);
+		
+		gluSphere(sunQuadric, 0.5f, 20, 20);
+	glPopMatrix();
+	
+	gluDeleteQuadric(sunQuadric);
+	
+	glDisable(GL_TEXTURE_2D);
+	
 	if (fogOn) {
 		glFogi(GL_FOG_MODE, GL_LINEAR);
 		glFogfv(GL_FOG_COLOR, fogColor);
@@ -341,12 +391,15 @@ void initGL() {
 	glLightfv(GL_LIGHT0, GL_AMBIENT, ambLight);
 	glEnable(GL_LIGHT0);
 	
-	glEnable(GL_COLOR_MATERIAL);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, sunLight);
+	glLightfv(GL_LIGHT1, GL_AMBIENT, sunLight);
+	glEnable(GL_LIGHT1);
 	
 	asteroidTexture = SOIL_load_OGL_texture("asteroid.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB);
 	smallAsteroidTexture = SOIL_load_OGL_texture("small-asteroid.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB);
 	spaceTexture = SOIL_load_OGL_texture("space.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB);
 	projectileTexture = SOIL_load_OGL_texture("projectile.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB);
+	sunTexture = SOIL_load_OGL_texture("sun.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB);
 }
 
 void reshape(int w, int h) {
@@ -400,6 +453,12 @@ void animateTimer(int value) {
 			
 			iter++;
 		}
+	}
+	
+	sun.move();
+	
+	if (sun.position.x > 10 || sun.position.x < -10) {
+		sun.switchDirection();
 	}
 	
 	glutTimerFunc(10, animateTimer, 0);
