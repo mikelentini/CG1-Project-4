@@ -31,8 +31,8 @@ bool nurbsOn = false;
 list<Asteroid> asteroids;
 list<Bullet> bullets;
 
-float ambLight[] = { 0.01f, 0.01f, 0.01f, 0.01f };
-float sunLight[] = { 1, 0.5f, 0, 1 };
+float ambLight[] = { 0.01f, 0.01f, 0.01f };
+float sunLight[] = { 1, 0.5f, 0 };
 
 float fogColor[] = { 0.70f, 0.70f, 0.70f, 1 };
 
@@ -47,6 +47,23 @@ float lastY = 0;
 
 const int ESC = 27, Q = 113, ONE = 49, TWO = 50, SPACE = 32, Z = 122, 
 	W = 119, A = 97, S = 115, D = 100, R = 114, F = 102, N = 110;
+	
+void turnOnLights() {
+	glEnable(GL_LIGHTING);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambLight);
+	glEnable(GL_LIGHT0);
+	
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, sunLight);
+	glLightfv(GL_LIGHT1, GL_AMBIENT, sunLight);
+	glEnable(GL_LIGHT1);
+}
+
+void turnOffLights() {
+	glDisable(GL_LIGHTING);
+	glDisable(GL_LIGHT0);
+	glDisable(GL_LIGHT1);
+	glDisable(GL_COLOR_MATERIAL);
+}
 
 void keyboard(unsigned char key, int x, int y) {
 	switch (key) {
@@ -60,18 +77,9 @@ void keyboard(unsigned char key, int x, int y) {
 			lightOn = !lightOn;
 			
 			if (lightOn) {
-				glEnable(GL_LIGHTING);
-				glLightfv(GL_LIGHT0, GL_AMBIENT, ambLight);
-				glEnable(GL_LIGHT0);
-				
-				glLightfv(GL_LIGHT1, GL_DIFFUSE, sunLight);
-				glLightfv(GL_LIGHT1, GL_AMBIENT, sunLight);
-				glEnable(GL_LIGHT1);
+				turnOnLights();
 			} else {
-				glDisable(GL_LIGHTING);
-				glDisable(GL_LIGHT0);
-				glDisable(GL_LIGHT1);
-				glDisable(GL_COLOR_MATERIAL);
+				turnOffLights();
 			}
 			
 			break;
@@ -193,8 +201,8 @@ void drawScene() {
 		glDisable(GL_COLOR_MATERIAL);
 	}
 	
-	float spec[] = { 1, 1, 1, 1 };
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, spec);
+	float ambAndDiffuse[] = { 1, 1, 1, 1 };
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, ambAndDiffuse);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glColor3f(1, 1, 1);
 	
@@ -314,8 +322,7 @@ void drawScene() {
 		}
 	}
 	
-	float sunPos[] = { sun.position.x, sun.position.y, sun.position.z, 1 };
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, sunLight);
+	float sunPos[] = { sun.position.x, sun.position.y, sun.position.z, 1.0f };
 	glLightfv(GL_LIGHT1, GL_POSITION, sunPos);
 	
 	glPushMatrix();
@@ -330,7 +337,43 @@ void drawScene() {
 	glDisable(GL_TEXTURE_2D);
 	
 	if (nurbsOn) {
-	
+		GLUnurbsObj *nurbs = gluNewNurbsRenderer();
+		
+		gluNurbsProperty(nurbs, GLU_SAMPLING_TOLERANCE, 400);
+		
+		float control[4][4][3]= {{{ -2, -2, 0 },
+		                          { -2, -1, 0 },
+		                          { -2, 1, 0 },
+		                          { -2, 1, 0 }},
+
+		                         {{ -1, -2, 0 },
+		                          { -1, -1, 3 },
+		                          { -1, 1, 3 },
+		                          { -1, 2, 0 }},
+
+		                         {{ 1, -2, 0 },
+		                          { 1, -1, 3 },
+		                          { 1,  1, 3 },
+		                          { 1,  2, 0 }},
+
+		                         {{ 2, -2, 0 },
+		                          { 2, -1, 0 },
+		                          { 2, 1, 0 },
+		                          { 2, 2, 0 }}};
+		
+		float knots[] = { 0, 0, 0, 0, 1, 1, 1, 1 };
+		
+		if (fillShapes) {
+			gluNurbsProperty(nurbs, GLU_DISPLAY_MODE, GLU_FILL);
+		} else {
+			gluNurbsProperty(nurbs, GLU_DISPLAY_MODE, GLU_OUTLINE_POLYGON);
+		}
+		
+		gluBeginSurface(nurbs);
+			gluNurbsSurface(nurbs, 8, knots, 8, knots, 12, 3, &control[0][0][0], 4, 4, GL_MAP2_VERTEX_3);
+		gluEndSurface(nurbs);
+		
+		gluDeleteNurbsRenderer(nurbs);
 	}
 	
 	if (fogOn) {
@@ -394,13 +437,7 @@ void initGL() {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	glEnable(GL_LIGHTING);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ambLight);
-	glEnable(GL_LIGHT0);
-	
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, sunLight);
-	glLightfv(GL_LIGHT1, GL_AMBIENT, sunLight);
-	glEnable(GL_LIGHT1);
+	turnOnLights();
 	
 	asteroidTexture = SOIL_load_OGL_texture("asteroid.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB);
 	smallAsteroidTexture = SOIL_load_OGL_texture("small-asteroid.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_POWER_OF_TWO | SOIL_FLAG_INVERT_Y | SOIL_FLAG_NTSC_SAFE_RGB);
